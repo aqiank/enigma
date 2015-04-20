@@ -12,8 +12,8 @@ type buildInfo struct {
 
 type componentInfo struct {
 	Type string `json:"type"`
-	In string `json:"in"`
-	Out string `json:"out"`
+	In   string `json:"in"`
+	Out  string `json:"out"`
 }
 
 func FromJSON(data []byte) (*Component, error) {

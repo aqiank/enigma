@@ -12,17 +12,23 @@ const (
 
 const (
 	NumAlphabets = 26
-	A = 65
-	Z = 90
+	A            = 65
+	Z            = 90
 )
 
+// Enigma machine is made of several components with similar functionalities,
+// namely the plugboard, rotors, and reflector. Each has an input and output
+// "sockets" and they are all chained to each other. Therefore, the components
+// are implemented as a double-linked lists that have input and output maps.
+// The maps are implemented in simple arrays of bytes instead of Go's map for
+// simplicity.
 type Component struct {
-	out [NumAlphabets]byte
-	in [NumAlphabets]byte
-	offset byte
-	next *Component
-	prev *Component
-	type_ int
+	out    [NumAlphabets]byte // in->out map of characters e.g. out[in]
+	in     [NumAlphabets]byte // out->in map of characters e.g. in[out]
+	offset byte               // offset is used by Rotors and ignored by other components
+	next   *Component
+	prev   *Component
+	type_  int
 }
 
 // Create an Enigma component with default settings
@@ -66,7 +72,7 @@ func (comp *Component) Encrypt(msg []byte) []byte {
 // Set initial settings for the Enigma component
 func (comp *Component) Set(in, out string) {
 	for i := 0; i < NumAlphabets; i++ {
-		inc := in[i] - A // Input Character Index
+		inc := in[i] - A   // Input Character Index
 		outc := out[i] - A // Output Character Index
 		comp.in[outc] = inc
 		comp.out[inc] = outc
