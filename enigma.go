@@ -50,12 +50,14 @@ func (comp *Component) Connect(oth *Component) *Component {
 	return oth
 }
 
-// Encrypt a message using a chain of Enigma components
+// Encrypt a message using a chain of Enigma components. Because of the way
+// Enigma works, the process of decrypting is the same as encrypting. So
+// use this for decrypting as well!
 func (comp *Component) Encrypt(msg []byte) []byte {
 	b := clean(msg)
 	emsg := make([]byte, len(b))
 	for i, _ := range b {
-		comp.step()
+		comp.rotate()
 		emsg[i] = comp.encryptChar(b[i])
 	}
 	return emsg
@@ -91,8 +93,8 @@ func (comp *Component) encryptChar(c byte) byte {
 	return A + j
 }
 
-func (comp *Component) step() {
-	// Only step current component it's a rotor
+func (comp *Component) rotate() {
+	// Only rotate current component it's a rotor
 	if comp.type_ == Rotor {
 		comp.offset = (comp.offset + 1) % NumAlphabets
 		for i := byte(0); i < NumAlphabets; i++ {
@@ -102,7 +104,7 @@ func (comp *Component) step() {
 		}
 	}
 	if comp.next != nil && comp.offset == 0 {
-		comp.next.step()
+		comp.next.rotate()
 	}
 }
 
