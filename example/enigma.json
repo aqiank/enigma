@@ -1,0 +1,29 @@
+{
+	"components": [
+		{
+			"type": "plugboard",
+			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			"out": "MNOPQRSTUVWXYZABCDEFGHIJKL"
+		},
+		{
+			"type": "rotor",
+			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			"out": "HKOAJIDMFZTELQWRBSCXNGUYPV"
+		},
+		{
+			"type": "rotor",
+			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			"out": "ZYTCDEFWHIJKLMNOPQRSBUVGXA"
+		},
+		{
+			"type": "rotor",
+			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			"out": "EFGHIJKLMNOPQRSTUVWXYZABCD"
+		},
+		{
+			"type": "reflector",
+			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			"out": "ZYXWVUTSRQPONMLKJIHGFEDCBA"
+		}
+	]
+}
