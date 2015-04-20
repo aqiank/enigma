@@ -100,7 +100,7 @@ func (comp *Component) encryptChar(c byte) byte {
 }
 
 func (comp *Component) rotate() {
-	// Only rotate current component it's a rotor
+	// Only rotate current component if it's a rotor
 	if comp.type_ == Rotor {
 		comp.offset = (comp.offset + 1) % NumAlphabets
 		for i := byte(0); i < NumAlphabets; i++ {
