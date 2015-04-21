@@ -64,19 +64,34 @@ func (comp *Component) Encrypt(msg []byte) []byte {
 	b := sanitizeString(msg)
 	emsg := make([]byte, len(b))
 	for i, _ := range b {
-		comp.rotate()
+		comp.step()
 		emsg[i] = comp.encryptChar(b[i])
 	}
 	return emsg
 }
 
 // Set initial settings for the Enigma component
-func (comp *Component) Set(in, out string) {
+func (comp *Component) SetCharacterMap(in, out string) {
 	for i := 0; i < NumAlphabets; i++ {
 		inc := in[i] - A   // Input Character Index
 		outc := out[i] - A // Output Character Index
 		comp.in[outc] = inc
 		comp.out[inc] = outc
+	}
+}
+
+// Offset current rotor component by n position. Should only be used before
+// encryption (with the exception of an internal function that calls it).
+func (comp *Component) OffsetBy(n byte) {
+	if comp.type_ != Rotor {
+		return
+	}
+
+	comp.offset = (comp.offset + n) % NumAlphabets
+	for i := byte(0); i < NumAlphabets; i++ {
+		j := (comp.out[i] + n) % NumAlphabets
+		comp.out[i] = j
+		comp.in[j] = i
 	}
 }
 
@@ -101,29 +116,16 @@ func (comp *Component) encryptChar(c byte) byte {
 	return A + j
 }
 
-// Rotate a rotor, or the next component that is a rotor.
-func (comp *Component) rotate() {
-	// Only rotate current component if it's a rotor
-	if comp.type_ == Rotor {
-		comp.offsetBy(1)
-	}
+// Step all rotors that are forward-linked to this component.
+func (comp *Component) step() {
+	comp.OffsetBy(1)
 
 	// Rotate the next component on the condition that the current rotor has
 	// done a full revolution, or if the current component is not a rotor.
 	// It knows that the component is not a rotor when the offset is zero,
-	// and even if it is a rotor, the next component should rotate anyway.
+	// and even if it is a rotor, the next component should step anyway.
 	if comp.next != nil && comp.offset == 0 {
-		comp.next.rotate()
-	}
-}
-
-// The actually function that does the rotating (or offsetting).
-func (comp *Component) offsetBy(n byte) {
-	comp.offset = (comp.offset + n) % NumAlphabets
-	for i := byte(0); i < NumAlphabets; i++ {
-		j := (comp.out[i] + n) % NumAlphabets
-		comp.out[i] = j
-		comp.in[j] = i
+		comp.next.step()
 	}
 }
 

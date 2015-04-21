@@ -8,17 +8,20 @@
 		{
 			"type": "rotor",
 			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			"out": "HKOAJIDMFZTELQWRBSCXNGUYPV"
+			"out": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			"offset": 1
 		},
 		{
 			"type": "rotor",
 			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			"out": "ZYTCDEFWHIJKLMNOPQRSBUVGXA"
+			"out": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			"offset": 2
 		},
 		{
 			"type": "rotor",
 			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			"out": "EFGHIJKLMNOPQRSTUVWXYZABCD"
+			"out": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			"offset": 3
 		},
 		{
 			"type": "reflector",

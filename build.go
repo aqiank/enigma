@@ -14,6 +14,7 @@ type componentInfo struct {
 	Type string `json:"type"`
 	In   string `json:"in"`
 	Out  string `json:"out"`
+	Offset int `json:"offset"`
 }
 
 func FromJSON(data []byte) (*Component, error) {
@@ -54,7 +55,8 @@ func build(info buildInfo) (*Component, error) {
 		default:
 			return nil, fmt.Errorf("build: unknown component type")
 		}
-		next.Set(v.In, v.Out)
+		next.SetCharacterMap(v.In, v.Out)
+		next.OffsetBy(byte(v.Offset))
 		if first == nil {
 			first = next
 			prev = next
