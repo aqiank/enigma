@@ -18,9 +18,10 @@ const (
 // Enigma machine is made of several components with similar functionalities,
 // namely the plugboard, rotors, and reflector. Each has an input and output
 // "sockets" and they are all chained to each other. Therefore, the components
-// are implemented as a double-linked lists that have input and output
-// character maps. The maps are implemented in simple arrays of bytes instead
-// of Go's map for simplicity.
+// are implemented as double-linked lists that have input and output character
+// maps. The maps are implemented in simple arrays of bytes instead of Go's map
+// for simplicity when used in two-directional way e.g. key[value] and
+// value[key].
 type Component struct {
 	out    [NumAlphabets]byte // in->out map of characters e.g. out[in]
 	in     [NumAlphabets]byte // out->in map of characters e.g. in[out]
@@ -50,7 +51,7 @@ func NewComponent(type_ int) *Component {
 	return comp
 }
 
-// Connect an enigma component to another
+// Connect a set of Enigma components together
 func Connect(comps ...*Component) *Component{
 	if len(comps) <= 0 {
 		return nil
@@ -129,8 +130,7 @@ func (comp *Component) countRevs(steps int) int {
 	}
 }
 
-// Step current rotor component by n position. Should only be used before
-// encryption (with the exception of an internal function that calls it).
+// Step only current rotor component by n position.
 func (comp *Component) step(n int) {
 	if comp.type_ != Rotor {
 		return
