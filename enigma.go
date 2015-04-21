@@ -35,6 +35,8 @@ func NewComponent(type_ int) *Component {
 	comp := &Component{}
 	comp.type_ = type_
 	if comp.type_ == Reflector {
+		// In a reflector, each character must be in a pair. e.g. A must
+		// reflect to Z and Z must reflect to A, B to Y and Y to B etc..
 		for i := 0; i < NumAlphabets; i++ {
 			comp.in[i] = byte(i)
 			comp.out[i] = byte(NumAlphabets - (i + 1))
