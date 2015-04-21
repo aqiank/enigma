@@ -123,11 +123,10 @@ func (comp *Component) Step(steps int) {
 
 // Count number of revolutions. Returns steps if not a Rotor.
 func (comp *Component) countRevs(steps int) int {
-	if comp.type_ == Rotor {
-		return (comp.offset + steps) / NumAlphabets
-	} else {
+	if comp.type_ != Rotor {
 		return steps
 	}
+	return (comp.offset + steps) / NumAlphabets
 }
 
 // Step only current rotor component by n position.
@@ -138,10 +137,62 @@ func (comp *Component) step(n int) {
 
 	comp.offset = (comp.offset + n) % NumAlphabets
 	for i := byte(0); i < NumAlphabets; i++ {
-		j := byte(int(comp.out[i]) + n) % NumAlphabets
+		j := byte((int(comp.out[i]) + n) % NumAlphabets)
 		comp.out[i] = j
 		comp.in[j] = i
 	}
+}
+
+func (comp *Component) Offset() int {
+	return comp.offset
+}
+
+func (comp *Component) Type() int {
+	return comp.type_
+}
+
+func (comp *Component) Next() *Component {
+	return comp.next
+}
+
+func (comp *Component) Prev() *Component {
+	return comp.prev
+}
+
+// Creates a clone of all connected components
+func (comp *Component) Settings() []ComponentInfo {
+	if comp.next == nil {
+		return nil
+	}
+
+	var info []ComponentInfo
+	for ; comp != nil; comp = comp.next {
+		var type_ string
+
+		switch comp.type_ {
+		case Plugboard:
+			type_ = "plugboard"
+		case Rotor:
+			type_ = "rotor"
+		case Reflector:
+			type_ = "reflector"
+		}
+
+		var in, out [26]byte
+		for i := range comp.in {
+			in[i] = comp.in[i] + 'A'
+			out[i] = comp.out[i] + 'A'
+		}
+
+		info = append(info, ComponentInfo{
+			Type: type_,
+			Offset: comp.offset,
+			In: string(in[:]),
+			Out: string(out[:]),
+		})
+	}
+
+	return info
 }
 
 // Remove unacceptable characters from message

@@ -6,11 +6,7 @@ import (
 	"os"
 )
 
-type buildInfo struct {
-	Components []componentInfo `json:"components"`
-}
-
-type componentInfo struct {
+type ComponentInfo struct {
 	Type string `json:"type"`
 	In   string `json:"in"`
 	Out  string `json:"out"`
@@ -18,11 +14,11 @@ type componentInfo struct {
 }
 
 func FromJSON(data []byte) (*Component, error) {
-	var info buildInfo
+	var info []ComponentInfo
 	if err := json.Unmarshal(data, &info); err != nil {
 		return nil, fmt.Errorf("FromJSON: %v", err)
 	}
-	return build(info)
+	return Build(info)
 }
 
 func FromJSONFile(filename string) (*Component, error) {
@@ -32,22 +28,22 @@ func FromJSONFile(filename string) (*Component, error) {
 	}
 	defer file.Close()
 
-	var info buildInfo
+	var info []ComponentInfo
 	err = json.NewDecoder(file).Decode(&info)
 	if err != nil {
 		return nil, fmt.Errorf("FromJSONFile: %v", err)
 	}
 
-	return build(info)
+	return Build(info)
 }
 
-func build(info buildInfo) (*Component, error) {
-	if len(info.Components) <= 0 {
-		return nil, fmt.Errorf("build: empty component info")
+func Build(info []ComponentInfo) (*Component, error) {
+	if len(info) <= 0 {
+		return nil, fmt.Errorf("Build: empty component info")
 	}
 
-	comps := make([]*Component, len(info.Components))
-	for i, v := range info.Components {
+	comps := make([]*Component, len(info))
+	for i, v := range info {
 		var c *Component
 		switch v.Type {
 		case "rotor":
@@ -57,7 +53,7 @@ func build(info buildInfo) (*Component, error) {
 		case "plugboard":
 			c = NewComponent(Plugboard)
 		default:
-			return nil, fmt.Errorf("build: unknown component type")
+			return nil, fmt.Errorf("Build: unknown component type")
 		}
 		c.SetCharacterMap(v.In, v.Out)
 		c.Step(v.Offset)

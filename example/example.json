@@ -1,32 +1,30 @@
-{
-	"components": [
-		{
-			"type": "plugboard",
-			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			"out": "MNOPQRSTUVWXYZABCDEFGHIJKL"
-		},
-		{
-			"type": "rotor",
-			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			"out": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			"offset": 1
-		},
-		{
-			"type": "rotor",
-			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			"out": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			"offset": 2
-		},
-		{
-			"type": "rotor",
-			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			"out": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			"offset": 3
-		},
-		{
-			"type": "reflector",
-			"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			"out": "ZYXWVUTSRQPONMLKJIHGFEDCBA"
-		}
-	]
-}
+[
+	{
+		"type": "plugboard",
+		"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"out": "MNOPQRSTUVWXYZABCDEFGHIJKL"
+	},
+	{
+		"type": "rotor",
+		"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"out": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"offset": 1
+	},
+	{
+		"type": "rotor",
+		"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"out": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"offset": 2
+	},
+	{
+		"type": "rotor",
+		"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"out": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"offset": 3
+	},
+	{
+		"type": "reflector",
+		"in":  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"out": "ZYXWVUTSRQPONMLKJIHGFEDCBA"
+	}
+]
