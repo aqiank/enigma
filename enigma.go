@@ -4,6 +4,7 @@ import (
 	"strings"
 )
 
+// Types of Components
 const (
 	Plugboard = iota
 	Rotor
@@ -19,9 +20,9 @@ const (
 // Enigma machine is made of several components with similar functionalities,
 // namely the plugboard, rotors, and reflector. Each has an input and output
 // "sockets" and they are all chained to each other. Therefore, the components
-// are implemented as a double-linked lists that have input and output maps.
-// The maps are implemented in simple arrays of bytes instead of Go's map for
-// simplicity.
+// are implemented as a double-linked lists that have input and output
+// character maps. The maps are implemented in simple arrays of bytes instead
+// of Go's map for simplicity.
 type Component struct {
 	out    [NumAlphabets]byte // in->out map of characters e.g. out[in]
 	in     [NumAlphabets]byte // out->in map of characters e.g. in[out]
@@ -60,7 +61,7 @@ func (comp *Component) Connect(oth *Component) *Component {
 // Enigma works, the process of decrypting is the same as encrypting. So
 // use this for decrypting as well!
 func (comp *Component) Encrypt(msg []byte) []byte {
-	b := clean(msg)
+	b := sanitizeString(msg)
 	emsg := make([]byte, len(b))
 	for i, _ := range b {
 		comp.rotate()
@@ -79,6 +80,7 @@ func (comp *Component) Set(in, out string) {
 	}
 }
 
+// Encrypt a single character
 func (comp *Component) encryptChar(c byte) byte {
 	r := comp
 	j := c - A
@@ -99,6 +101,7 @@ func (comp *Component) encryptChar(c byte) byte {
 	return A + j
 }
 
+// Rotate a rotor, or the next component that is a rotor.
 func (comp *Component) rotate() {
 	// Only rotate current component if it's a rotor
 	if comp.type_ == Rotor {
@@ -109,12 +112,16 @@ func (comp *Component) rotate() {
 			comp.in[j] = i
 		}
 	}
+
+	// Rotate the next component on the condition that the current rotor has
+	// done a full revolution, or if the current component is not a rotor.
 	if comp.next != nil && comp.offset == 0 {
 		comp.next.rotate()
 	}
 }
 
-func clean(msg []byte) []byte {
+// Remove unacceptable characters from message
+func sanitizeString(msg []byte) []byte {
 	s := string(msg)
 	s = strings.ToUpper(s)
 	s = strings.TrimSpace(s)
@@ -122,6 +129,7 @@ func clean(msg []byte) []byte {
 	return []byte(s)
 }
 
+// Strip a set of characters from string
 func stripChars(str, chr string) string {
 	return strings.Map(func(r rune) rune {
 		if strings.IndexRune(chr, r) < 0 {
