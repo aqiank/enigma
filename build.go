@@ -60,7 +60,7 @@ func build(info buildInfo) (*Component, error) {
 			return nil, fmt.Errorf("build: unknown component type")
 		}
 		c.SetCharacterMap(v.In, v.Out)
-		c.OffsetBy(byte(v.Offset))
+		c.Step(v.Offset)
 		comps[i] = c
 	}
 

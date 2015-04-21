@@ -17,7 +17,8 @@ func TestDefaultEncrypt(t *testing.T) {
 	rf := NewComponent(Reflector)
 	Connect(pb, r1, r2, r3, rf)
 	output := pb.Encrypt([]byte(Input))
+	t.Log(string(output))
 	if string(output) != Output {
-		t.Fatal("Encrypted text doesn't matched intended output")
+		t.Fatal("Encrypted text doesn't matched intended output:", Output)
 	}
 }

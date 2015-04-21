@@ -24,7 +24,7 @@ const (
 type Component struct {
 	out    [NumAlphabets]byte // in->out map of characters e.g. out[in]
 	in     [NumAlphabets]byte // out->in map of characters e.g. in[out]
-	offset byte               // offset is used by Rotors and ignored by other components
+	offset int               // offset is used by Rotors and ignored by other components
 	next   *Component
 	prev   *Component
 	type_  int
@@ -70,7 +70,7 @@ func (comp *Component) Encrypt(msg []byte) []byte {
 	b := sanitizeString(msg)
 	emsg := make([]byte, len(b))
 	for i, _ := range b {
-		comp.step()
+		comp.Step(1)
 		emsg[i] = comp.encryptChar(b[i])
 	}
 	return emsg
@@ -83,21 +83,6 @@ func (comp *Component) SetCharacterMap(in, out string) {
 		outc := out[i] - 'A' // Output Character Index
 		comp.in[outc] = inc
 		comp.out[inc] = outc
-	}
-}
-
-// Offset current rotor component by n position. Should only be used before
-// encryption (with the exception of an internal function that calls it).
-func (comp *Component) OffsetBy(n byte) {
-	if comp.type_ != Rotor {
-		return
-	}
-
-	comp.offset = (comp.offset + n) % NumAlphabets
-	for i := byte(0); i < NumAlphabets; i++ {
-		j := (comp.out[i] + n) % NumAlphabets
-		comp.out[i] = j
-		comp.in[j] = i
 	}
 }
 
@@ -123,15 +108,39 @@ func (comp *Component) encryptChar(c byte) byte {
 }
 
 // Step all rotors that are forward-linked to this component.
-func (comp *Component) step() {
-	comp.OffsetBy(1)
+func (comp *Component) Step(steps int) {
+	revs := comp.countRevs(steps)
+
+	comp.step(steps)
 
 	// Rotate the next component on the condition that the current rotor has
 	// done a full revolution, or if the current component is not a rotor.
-	// It knows that the component is not a rotor when the offset is zero,
-	// and even if it is a rotor, the next component should step anyway.
-	if comp.next != nil && comp.offset == 0 {
-		comp.next.step()
+	if comp.next != nil && (revs > 0 || comp.type_ != Rotor) {
+		comp.next.Step(revs)
+	}
+}
+
+// Count number of revolutions. Returns steps if not a Rotor.
+func (comp *Component) countRevs(steps int) int {
+	if comp.type_ == Rotor {
+		return (comp.offset + steps) / NumAlphabets
+	} else {
+		return steps
+	}
+}
+
+// Step current rotor component by n position. Should only be used before
+// encryption (with the exception of an internal function that calls it).
+func (comp *Component) step(n int) {
+	if comp.type_ != Rotor {
+		return
+	}
+
+	comp.offset = (comp.offset + n) % NumAlphabets
+	for i := byte(0); i < NumAlphabets; i++ {
+		j := byte(int(comp.out[i]) + n) % NumAlphabets
+		comp.out[i] = j
+		comp.in[j] = i
 	}
 }
 
