@@ -14,11 +14,11 @@ var m1, m2 *enigma.Component
 
 func main() {
 	var err error
-	m1, err = enigma.FromJSONFile("enigma.json")
+	m1, err = enigma.FromJSONFile("example.json")
 	if err != nil {
 		fmt.Println(err)
 	}
-	m2, err = enigma.FromJSONFile("enigma.json")
+	m2, err = enigma.FromJSONFile("example.json")
 	if err != nil {
 		fmt.Println(err)
 	}

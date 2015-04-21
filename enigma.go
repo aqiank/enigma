@@ -13,8 +13,6 @@ const (
 
 const (
 	NumAlphabets = 26
-	A            = 65
-	Z            = 90
 )
 
 // Enigma machine is made of several components with similar functionalities,
@@ -38,13 +36,13 @@ func NewComponent(type_ int) *Component {
 	comp.type_ = type_
 	if comp.type_ == Reflector {
 		for i := 0; i < NumAlphabets; i++ {
-			comp.in[i] = byte(A + i)
-			comp.out[i] = byte(Z - i)
+			comp.in[i] = byte(i)
+			comp.out[i] = byte(NumAlphabets - (i + 1))
 		}
 	} else {
 		for i := 0; i < NumAlphabets; i++ {
-			comp.in[i] = byte(A + i)
-			comp.out[i] = byte(A + ((i + 1) % NumAlphabets))
+			comp.in[i] = byte(i)
+			comp.out[i] = byte(i)
 		}
 	}
 	return comp
@@ -73,8 +71,8 @@ func (comp *Component) Encrypt(msg []byte) []byte {
 // Set initial settings for the Enigma component
 func (comp *Component) SetCharacterMap(in, out string) {
 	for i := 0; i < NumAlphabets; i++ {
-		inc := in[i] - A   // Input Character Index
-		outc := out[i] - A // Output Character Index
+		inc := in[i] - 'A'   // Input Character Index
+		outc := out[i] - 'A' // Output Character Index
 		comp.in[outc] = inc
 		comp.out[inc] = outc
 	}
@@ -98,7 +96,7 @@ func (comp *Component) OffsetBy(n byte) {
 // Encrypt a single character
 func (comp *Component) encryptChar(c byte) byte {
 	r := comp
-	j := c - A
+	j := c - 'A'
 
 	// Run character through the rotors
 	for ; r != nil; r = r.next {
@@ -113,7 +111,7 @@ func (comp *Component) encryptChar(c byte) byte {
 		j = r.in[j]
 	}
 
-	return A + j
+	return 'A' + j
 }
 
 // Step all rotors that are forward-linked to this component.
