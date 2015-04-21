@@ -49,15 +49,16 @@ func NewComponent(type_ int) *Component {
 }
 
 // Connect an enigma component to another
-func Connect(comps ...*Component) {
+func Connect(comps ...*Component) *Component{
 	if len(comps) <= 0 {
-		return
+		return nil
 	}
 
 	for i := 0; i < len(comps) - 1; i++ {
 		comps[i].next = comps[i + 1]
 		comps[i + 1].prev = comps[i]
 	}
+	return comps[0]
 }
 
 // Encrypt a message using a chain of Enigma components. Because of the way
