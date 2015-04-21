@@ -115,6 +115,8 @@ func (comp *Component) rotate() {
 
 	// Rotate the next component on the condition that the current rotor has
 	// done a full revolution, or if the current component is not a rotor.
+	// It knows that the component is not a rotor when the offset is zero,
+	// and even if it is a rotor, the next component should rotate anyway.
 	if comp.next != nil && comp.offset == 0 {
 		comp.next.rotate()
 	}
