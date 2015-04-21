@@ -105,12 +105,7 @@ func (comp *Component) encryptChar(c byte) byte {
 func (comp *Component) rotate() {
 	// Only rotate current component if it's a rotor
 	if comp.type_ == Rotor {
-		comp.offset = (comp.offset + 1) % NumAlphabets
-		for i := byte(0); i < NumAlphabets; i++ {
-			j := (comp.out[i] + 1) % NumAlphabets
-			comp.out[i] = j
-			comp.in[j] = i
-		}
+		comp.offsetBy(1)
 	}
 
 	// Rotate the next component on the condition that the current rotor has
@@ -119,6 +114,16 @@ func (comp *Component) rotate() {
 	// and even if it is a rotor, the next component should rotate anyway.
 	if comp.next != nil && comp.offset == 0 {
 		comp.next.rotate()
+	}
+}
+
+// The actually function that does the rotating (or offsetting).
+func (comp *Component) offsetBy(n byte) {
+	comp.offset = (comp.offset + n) % NumAlphabets
+	for i := byte(0); i < NumAlphabets; i++ {
+		j := (comp.out[i] + n) % NumAlphabets
+		comp.out[i] = j
+		comp.in[j] = i
 	}
 }
 
