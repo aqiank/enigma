@@ -9,7 +9,7 @@ const (
 	Output = "QRIGBRXSWC"
 )
 
-func TestEncrypt(t *testing.T) {
+func TestDefaultEncrypt(t *testing.T) {
 	pb := NewComponent(Plugboard)
 	r1 := NewComponent(Rotor)
 	r2 := NewComponent(Rotor)
