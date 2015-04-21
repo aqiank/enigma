@@ -42,27 +42,29 @@ func FromJSONFile(filename string) (*Component, error) {
 }
 
 func build(info buildInfo) (*Component, error) {
-	var first, prev *Component
-	for _, v := range info.Components {
-		var next *Component
+	if len(info.Components) <= 0 {
+		return nil, fmt.Errorf("build: empty component info")
+	}
+
+	comps := make([]*Component, len(info.Components))
+	for i, v := range info.Components {
+		var c *Component
 		switch v.Type {
 		case "rotor":
-			next = NewComponent(Rotor)
+			c = NewComponent(Rotor)
 		case "reflector":
-			next = NewComponent(Reflector)
+			c = NewComponent(Reflector)
 		case "plugboard":
-			next = NewComponent(Plugboard)
+			c = NewComponent(Plugboard)
 		default:
 			return nil, fmt.Errorf("build: unknown component type")
 		}
-		next.SetCharacterMap(v.In, v.Out)
-		next.OffsetBy(byte(v.Offset))
-		if first == nil {
-			first = next
-			prev = next
-		} else {
-			prev = prev.Connect(next)
-		}
+		c.SetCharacterMap(v.In, v.Out)
+		c.OffsetBy(byte(v.Offset))
+		comps[i] = c
 	}
-	return first, nil
+
+	Connect(comps...)
+
+	return comps[0], nil
 }
