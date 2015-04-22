@@ -11,8 +11,8 @@ const (
 )
 
 func main() {
-	m := enigma.NewEnigma(enigma.RotorIII, enigma.RotorII, enigma.RotorI, enigma.ReflectorB)
-	m.SetStartingPositions('A', 'Z', 'A')
+	m := enigma.CreateEnigma(enigma.RotorIII, enigma.RotorII, enigma.RotorI, enigma.ReflectorB)
+	m.SetStartingPositions(0, 2, 0)
 	output := m.Encrypt(text)
 	fmt.Println("Encrypted", text, "as", output)
 

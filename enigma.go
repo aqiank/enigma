@@ -181,8 +181,8 @@ type Enigma struct {
 
 // Convenient function to create Enigma in standard configurations
 // e.g. a plugboard, three rotors, and a reflector
-func NewEnigma(rotorType1, rotorType2, rotorType3, reflectorType int) *Enigma {
-	e := &Enigma{}
+func CreateEnigma(rotorType1, rotorType2, rotorType3, reflectorType int) Enigma {
+	e := Enigma{}
 	pb := Plugboard{Alphabets}
 	r1 := CreateRotor(rotorType1)
 	r2 := CreateRotor(rotorType2)
