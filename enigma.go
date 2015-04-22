@@ -197,7 +197,7 @@ func (e *Enigma) SetStartingPositions(a... int) {
 	for i, v := range a {
 		if v >= 65 && v <= 90 {
 			v -= 'A'
-		} else {
+		} else if v < 0 && v > 25 {
 			return
 		}
 		e.components[i + 1].(*Rotor).SetStartingPosition(v)
