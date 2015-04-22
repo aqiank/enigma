@@ -78,6 +78,10 @@ func CreateRotor(type_ int) Rotor {
 	}
 }
 
+func (r *Rotor) SetStartingPosition(pos int) {
+	r.offset = pos
+}
+
 func (r *Rotor) processChar(ci int, reflecting bool) (int, bool) {
 	if reflecting {
 		idx := (ci + r.offset) % NumAlphabets
@@ -165,6 +169,18 @@ func NewEnigma(rotorType1, rotorType2, rotorType3, reflectorType int) *Enigma {
 	rfl := CreateReflector(reflectorType)
 	e.connect(&pb, &r1, &r2, &r3, &rfl)
 	return e
+}
+
+// Set starting positions of the rotors (also known as Grundstellung).
+func (e *Enigma) SetStartingPositions(a... int) {
+	for i, v := range a {
+		if v >= 65 && v <= 90 {
+			v -= 'A'
+		} else {
+			return
+		}
+		e.components[i + 1].(*Rotor).SetStartingPosition(v)
+	}
 }
 
 // Connect a set of Enigma components together
