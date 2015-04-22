@@ -1,7 +1,10 @@
 package enigma
 
 import (
-	"strings"
+	"bytes"
+
+	"enigma/bytesutil"
+	"enigma/stringutil"
 )
 
 // Types of Components
@@ -10,6 +13,36 @@ const (
 	Rotor
 	Reflector
 )
+
+const (
+	RotorI = iota
+	RotorII
+	RotorIII
+)
+
+const (
+	ReflectorA = iota
+	ReflectorB
+	ReflectorC
+)
+
+var rotorWiring = []string{
+	"EKMFLGDQVZNTOWYHXUSPAIBRCJ",
+	"AJDKSIRUXBLHWTMCQGZNPYFVOE",
+	"BDFHJLCPRTXVZNYEIWGAKMUSQO",
+}
+
+var reflectorWiring = []string {
+	"EJMZALYXVBWFCRQUONTSPIKHGD",
+	"YRUHQSLDPXNGOKMIEBFZCWVJAT",
+	"FVPJIAOYEDRZXWGCTKUQSBNMHL",
+}
+
+var notch = []int {
+	'Q',
+	'E',
+	'V',
+}
 
 const (
 	NumAlphabets = 26
@@ -23,43 +56,72 @@ const (
 // for simplicity when used in two-directional way e.g. key[value] and
 // value[key].
 type Component struct {
-	out    [NumAlphabets]byte // in->out map of characters e.g. out[in]
-	in     [NumAlphabets]byte // out->in map of characters e.g. in[out]
-	offset int               // offset is used by Rotors and ignored by other components
+	right  [NumAlphabets]byte
+	left   [NumAlphabets]byte
+	offset int // offset is used by Rotors and ignored by other components
+	notch  int
 	next   *Component
 	prev   *Component
 	type_  int
 }
 
-// Create an Enigma component with default settings
 func NewComponent(type_ int) *Component {
-	comp := &Component{}
-	comp.type_ = type_
-	if comp.type_ == Reflector {
-		// In a reflector, each character must be in a pair. e.g. A must
-		// reflect to Z and Z must reflect to A, B to Y and Y to B etc..
+	c := &Component{}
+	c.type_ = type_
+	for i := byte(0); i < NumAlphabets; i++ {
+		c.left[i] = i
+	}
+	return c
+}
+
+func NewPlugboard() *Component {
+	c := NewComponent(Plugboard)
+	c.right = c.left
+	return c
+}
+
+func NewRotor(rotorType int) *Component {
+	c := NewComponent(Rotor)
+	c.notch = notch[rotorType] - 'A'
+	if rotorType >= 0 && rotorType < len(rotorWiring) {
 		for i := 0; i < NumAlphabets; i++ {
-			comp.in[i] = byte(i)
-			comp.out[i] = byte(NumAlphabets - (i + 1))
-		}
-	} else {
-		for i := 0; i < NumAlphabets; i++ {
-			comp.in[i] = byte(i)
-			comp.out[i] = byte(i)
+			c.right[i] = rotorWiring[rotorType][i] - 'A'
 		}
 	}
-	return comp
+	return c
+}
+
+func NewReflector(reflectorType int) *Component {
+	c := NewComponent(Reflector)
+	if reflectorType >= 0 && reflectorType < len(reflectorWiring) {
+		for i := 0; i < NumAlphabets; i++ {
+			c.right[i] = reflectorWiring[reflectorType][i] - 'A'
+		}
+	}
+	return c
+}
+
+// Convenient function to create Enigma in standard configurations
+// e.g. a plugboard, three rotors, and a reflector
+func NewStandardEnigma(rotorType1, rotorType2, rotorType3, reflectorType int) *Component {
+	pb := NewPlugboard()
+	r1 := NewRotor(rotorType1)
+	r2 := NewRotor(rotorType2)
+	r3 := NewRotor(rotorType3)
+	rfl := NewReflector(reflectorType)
+	Connect(pb, r1, r2, r3, rfl)
+	return pb
 }
 
 // Connect a set of Enigma components together
-func Connect(comps ...*Component) *Component{
+func Connect(comps ...*Component) *Component {
 	if len(comps) <= 0 {
 		return nil
 	}
 
-	for i := 0; i < len(comps) - 1; i++ {
-		comps[i].next = comps[i + 1]
-		comps[i + 1].prev = comps[i]
+	for i := 0; i < len(comps)-1; i++ {
+		comps[i].next = comps[i+1]
+		comps[i+1].prev = comps[i]
 	}
 	return comps[0]
 }
@@ -68,7 +130,7 @@ func Connect(comps ...*Component) *Component{
 // Enigma works, the process of decrypting is the same as encrypting. So
 // use this for decrypting as well!
 func (comp *Component) Encrypt(msg []byte) []byte {
-	b := sanitizeString(msg)
+	b := stringutil.Sanitize(msg)
 	emsg := make([]byte, len(b))
 	for i, _ := range b {
 		comp.Step(1)
@@ -78,40 +140,61 @@ func (comp *Component) Encrypt(msg []byte) []byte {
 }
 
 // Set initial settings for the Enigma component
-func (comp *Component) SetCharacterMap(in, out string) {
+func (comp *Component) SetCharacterMap(right string) {
 	for i := 0; i < NumAlphabets; i++ {
-		inc := in[i] - 'A'   // Input Character Index
-		outc := out[i] - 'A' // Output Character Index
-		comp.in[outc] = inc
-		comp.out[inc] = outc
+		comp.left[i] = byte(i)
+		comp.right[i] = right[i] - 'A'
 	}
 }
 
 // Encrypt a single character
 func (comp *Component) encryptChar(c byte) byte {
 	r := comp
-	j := c - 'A'
+	i := byte(0)
+	c -= 'A'
 
-	// Run character through the rotors
 	for ; r != nil; r = r.next {
-		j = r.out[j]
-		if r.type_ == Reflector {
-			break
+		switch r.type_ {
+		case Plugboard:
+			i = r.lIndex(c)
+			c = r.right[i]
+		case Rotor:
+			c = r.right[i]
+			i = r.lIndex(c)
+		case Reflector:
+			c = r.right[i]
+			i = r.lIndex(c)
+			goto out
 		}
 	}
 
-	// Reflecting
+out:
 	for r = r.prev; r != nil; r = r.prev {
-		j = r.in[j]
+		c = r.left[i]
+		i = r.rIndex(c)
 	}
 
-	return 'A' + j
+	return 'A' + c
+}
+
+func (comp *Component) lIndex(c byte) byte {
+	return byte(bytes.IndexByte(comp.left[:], c))
+}
+
+func (comp *Component) rIndex(c byte) byte {
+	return byte(bytes.IndexByte(comp.right[:], c))
 }
 
 // Step all rotors that are forward-linked to this component.
 func (comp *Component) Step(steps int) {
-	revs := comp.countRevs(steps)
+	if steps <= 0 {
+		return
+	}
 
+	// Number of times the notch is encountered
+	revs := comp.countNotchRevs(steps)
+
+	// Step the rotor
 	comp.step(steps)
 
 	// Rotate the next component on the condition that the current rotor has
@@ -121,12 +204,31 @@ func (comp *Component) Step(steps int) {
 	}
 }
 
-// Count number of revolutions. Returns steps if not a Rotor.
-func (comp *Component) countRevs(steps int) int {
+// Count the number of times the rotor has passed the notch. Has to take care of
+// a case when the number of steps is a multiple of NumAlphabets (e.g. for
+// initial settings).
+func (comp *Component) countNotchRevs(steps int) int {
+	// Returns steps if not a Rotor.
 	if comp.type_ != Rotor {
 		return steps
 	}
-	return (comp.offset + steps) / NumAlphabets
+
+	// Return 0 if it is determined that the notch won't be reached in the steps
+	if comp.offset > comp.notch && steps < comp.notch + (NumAlphabets - comp.notch) {
+		return 0
+	}
+
+	return reallyCountNotchRevs(comp.offset, comp.notch, NumAlphabets, steps)
+}
+
+func reallyCountNotchRevs(current, notch, max, steps int) int {
+	revs := 0
+	steps -= notch - current
+	if steps > 0 {
+		revs++
+	}
+	revs += steps / max
+	return revs
 }
 
 // Step only current rotor component by n position.
@@ -136,80 +238,6 @@ func (comp *Component) step(n int) {
 	}
 
 	comp.offset = (comp.offset + n) % NumAlphabets
-	for i := byte(0); i < NumAlphabets; i++ {
-		j := byte((int(comp.out[i]) + n) % NumAlphabets)
-		comp.out[i] = j
-		comp.in[j] = i
-	}
-}
-
-func (comp *Component) Offset() int {
-	return comp.offset
-}
-
-func (comp *Component) Type() int {
-	return comp.type_
-}
-
-func (comp *Component) Next() *Component {
-	return comp.next
-}
-
-func (comp *Component) Prev() *Component {
-	return comp.prev
-}
-
-// Creates a clone of all connected components
-func (comp *Component) Settings() []ComponentInfo {
-	if comp.next == nil {
-		return nil
-	}
-
-	var info []ComponentInfo
-	for ; comp != nil; comp = comp.next {
-		var type_ string
-
-		switch comp.type_ {
-		case Plugboard:
-			type_ = "plugboard"
-		case Rotor:
-			type_ = "rotor"
-		case Reflector:
-			type_ = "reflector"
-		}
-
-		var in, out [26]byte
-		for i := range comp.in {
-			in[i] = comp.in[i] + 'A'
-			out[i] = comp.out[i] + 'A'
-		}
-
-		info = append(info, ComponentInfo{
-			Type: type_,
-			Offset: comp.offset,
-			In: string(in[:]),
-			Out: string(out[:]),
-		})
-	}
-
-	return info
-}
-
-// Remove unacceptable characters from message
-func sanitizeString(msg []byte) []byte {
-	s := string(msg)
-	s = strings.ToUpper(s)
-	s = strings.TrimSpace(s)
-	s = stripChars(s, " `1234567890-=~!@#$%^&*()_+[]\\;',./{}|:\"<>?")
-	return []byte(s)
-}
-
-// Strip a set of characters from string
-func stripChars(str, chr string) string {
-	return strings.Map(func(r rune) rune {
-		if strings.IndexRune(chr, r) < 0 {
-			return r
-		}
-		return -1
-	}, str)
+	bytesutil.Shift(comp.right[:], 1)
+	bytesutil.Shift(comp.left[:], 1)
 }

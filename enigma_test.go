@@ -5,20 +5,24 @@ import (
 )
 
 const (
-	Input = "Hello World."
-	Output = "QRIGBRXSWC"
+	PlainText  = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+	CipherText = "BDZGOWCXLTKSBTMCDLPBMUQOFXYHCXTGYJFLINHNXSHIUNTHEORX"
 )
 
-func TestDefaultEncrypt(t *testing.T) {
-	pb := NewComponent(Plugboard)
-	r1 := NewComponent(Rotor)
-	r2 := NewComponent(Rotor)
-	r3 := NewComponent(Rotor)
-	rf := NewComponent(Reflector)
-	Connect(pb, r1, r2, r3, rf)
-	output := pb.Encrypt([]byte(Input))
+func TestStandardEncrypt(t *testing.T) {
+	m := NewStandardEnigma(RotorIII, RotorII, RotorI, ReflectorB)
+	output := m.Encrypt([]byte(PlainText))
 	t.Log(string(output))
-	if string(output) != Output {
-		t.Fatal("Encrypted text doesn't matched intended output:", Output)
+	if string(output) != CipherText {
+		t.Fatal("Encrypted text doesn't matched intended output:", CipherText)
+	}
+}
+
+func TestStandardDecrypt(t *testing.T) {
+	m := NewStandardEnigma(RotorIII, RotorII, RotorI, ReflectorB)
+	output := m.Encrypt([]byte(CipherText))
+	t.Log(string(output))
+	if string(output) != PlainText {
+		t.Fatal("Decrypted text doesn't matched intended output:", PlainText)
 	}
 }

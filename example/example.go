@@ -7,33 +7,12 @@ import (
 )
 
 const (
-	text = `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`
+	//text = `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`
+	text = `AAAAAAAAAAAAAAAAAAAAAAAAAAAA`
 )
 
-var m1, m2 *enigma.Component
-
 func main() {
-	var err error
-	m1, err = enigma.FromJSONFile("example.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	m2, err = enigma.FromJSONFile("example.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	emsg := encode([]byte(text))
-	decode(emsg)
-}
-
-func encode(msg []byte) []byte {
-	emsg := m1.Encrypt(msg)
-	println("Encoding " + string(msg) + " as " + string(emsg))
-	return emsg
-}
-
-func decode(msg []byte) []byte {
-	dmsg := m2.Encrypt(msg)
-	println("Decoding " + string(msg) + " as " + string(dmsg))
-	return dmsg
+	m := enigma.NewStandardEnigma(enigma.RotorIII, enigma.RotorII, enigma.RotorI, enigma.ReflectorB)
+	output := m.Encrypt([]byte(text))
+	fmt.Println("Encrypted", text, "as", string(output))
 }
