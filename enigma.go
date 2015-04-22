@@ -6,6 +6,9 @@ import (
 	"enigma/stringutil"
 )
 
+// These information were obtained from
+// https://en.wikipedia.org/wiki/Enigma_rotor_details
+
 const (
 	RotorI = iota
 	RotorII
@@ -42,30 +45,34 @@ const (
 )
 
 // Enigma machine is made of several components with similar functionalities,
-// namely the plugboard, rotors, and reflector. Each has an input and output
-// "sockets" and they are all chained to each other. Therefore, the components
-// are implemented as double-linked lists that have input and output character
-// maps. The maps are implemented in simple arrays of bytes instead of Go's map
-// for simplicity when used in two-directional way e.g. key[value] and
-// value[key].
+// namely the plugboard, rotors, and reflector. Therefore, the components
+// are implemented as interface that have methods for encrypting characters and
+// stepping (rotors only, others will just pass the stepping count).
 type Component interface {
 	processChar(ci int, reflecting bool) (int, bool)
 	step(int) int
 }
 
+// A plugboard is simply a character scrambler, but does not step (or rotate)
+// or change its output character after several characters like the rotors do.
 type Plugboard struct {
 	charMap string
 }
 
+// Maps the input character to specified output on the plugboard
 func (p *Plugboard) processChar(ci int, reflecting bool) (int, bool) {
 	c := rune(p.charMap[ci])
 	return strings.IndexRune(Alphabets, c), reflecting
 }
 
+// Returns original step count since it's not a rotor
 func (p *Plugboard) step(n int) int {
 	return n
 }
 
+// Rotor always scrambles character differently every time a character enters.
+// When the rotor offset reaches its notch, its next step will cause the next
+// rotor to also step.
 type Rotor struct {
 	type_ int
 	offset int
@@ -78,10 +85,13 @@ func CreateRotor(type_ int) Rotor {
 	}
 }
 
+// Set the initial offset (or position) of the rotor. Also known as
+// grundstellung.
 func (r *Rotor) SetStartingPosition(pos int) {
 	r.offset = pos
 }
 
+// Scrambles a character depending on its current rotor position.
 func (r *Rotor) processChar(ci int, reflecting bool) (int, bool) {
 	if reflecting {
 		idx := (ci + r.offset) % NumAlphabets
@@ -108,12 +118,16 @@ func (r *Rotor) processChar(ci int, reflecting bool) (int, bool) {
 	}
 }
 
+// Step (or rotate) the rotor which causes the characters to scramble
+// differently
 func (r *Rotor) step(n int) int {
 	revs := r.countNotchRevs(n)
 	r.offset = (r.offset + n) % NumAlphabets
 	return revs
 }
 
+// Count how many times the rotor has encountered the notch, in case it has
+// a large step count
 func (r *Rotor) countNotchRevs(steps int) int {
 	// Return 0 if it is determined that the notch won't be reached in the steps
 	nch := notch[r.type_] - 'A'
@@ -123,6 +137,7 @@ func (r *Rotor) countNotchRevs(steps int) int {
 	return reallyCountNotchRevs(r.offset, nch, NumAlphabets, steps)
 }
 
+// Actual counting function of the notch encounters
 func reallyCountNotchRevs(current, notch, max, steps int) int {
 	revs := 0
 	steps -= notch - current
@@ -133,6 +148,10 @@ func reallyCountNotchRevs(current, notch, max, steps int) int {
 	return revs
 }
 
+// Reflector mirrors the character that enters it (e.g. if A refers to Y, then
+// Y also refers mirrors to A. It is what makes the decrypting process in an
+// Enigma possible, even though it means that a character can never refer to
+// itself (which is a disadvantage).
 type Reflector struct {
 	type_ int
 	charMap string
@@ -145,11 +164,13 @@ func CreateReflector(type_ int) Reflector {
 	}
 }
 
+// Mirrors a character with its partner
 func (r *Reflector) processChar(ci int, reflecting bool) (int, bool) {
 	c := rune(reflectorCharMap[r.type_][ci])
 	return strings.IndexRune(Alphabets, c), !reflecting
 }
 
+// Returns original step count since it's not a rotor
 func (r *Reflector) step(n int) int {
 	return n
 }
