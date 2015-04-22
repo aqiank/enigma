@@ -10,19 +10,19 @@ const (
 )
 
 func TestStandardEncrypt(t *testing.T) {
-	m := NewStandardEnigma(RotorIII, RotorII, RotorI, ReflectorB)
-	output := m.Encrypt([]byte(PlainText))
-	t.Log(string(output))
-	if string(output) != CipherText {
+	m := NewEnigma(RotorIII, RotorII, RotorI, ReflectorB)
+	output := m.Encrypt(PlainText)
+	t.Log(output)
+	if output != CipherText {
 		t.Fatal("Encrypted text doesn't matched intended output:", CipherText)
 	}
 }
 
 func TestStandardDecrypt(t *testing.T) {
-	m := NewStandardEnigma(RotorIII, RotorII, RotorI, ReflectorB)
-	output := m.Encrypt([]byte(CipherText))
-	t.Log(string(output))
-	if string(output) != PlainText {
+	m := NewEnigma(RotorIII, RotorII, RotorI, ReflectorB)
+	output := m.Encrypt(CipherText)
+	t.Log(output)
+	if output != PlainText {
 		t.Fatal("Decrypted text doesn't matched intended output:", PlainText)
 	}
 }

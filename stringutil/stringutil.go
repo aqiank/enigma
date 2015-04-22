@@ -5,12 +5,11 @@ import (
 )
 
 // Remove unacceptable characters from message
-func Sanitize(msg []byte) []byte {
-	s := string(msg)
-	s = strings.ToUpper(s)
-	s = strings.TrimSpace(s)
-	s = stripChars(s, " `1234567890-=~!@#$%^&*()_+[]\\;',./{}|:\"<>?")
-	return []byte(s)
+func Sanitize(msg string) string {
+	msg = strings.ToUpper(msg)
+	msg = strings.TrimSpace(msg)
+	msg = stripChars(msg, " `1234567890-=~!@#$%^&*()_+[]\\;',./{}|:\"<>?")
+	return msg
 }
 
 // Strip a set of characters from string
