@@ -8,16 +8,16 @@ import (
 func Sanitize(msg string) string {
 	msg = strings.ToUpper(msg)
 	msg = strings.TrimSpace(msg)
-	msg = stripChars(msg, " `1234567890-=~!@#$%^&*()_+[]\\;',./{}|:\"<>?")
+	msg = stripChars(msg)
 	return msg
 }
 
-// Strip a set of characters from string
-func stripChars(str, chr string) string {
+// Strip unknown characters
+func stripChars(str string) string {
 	return strings.Map(func(r rune) rune {
-		if strings.IndexRune(chr, r) < 0 {
-			return r
+		if r < 65 || r > 90 {
+			return -1
 		}
-		return -1
+		return r
 	}, str)
 }
