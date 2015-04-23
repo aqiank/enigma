@@ -196,6 +196,10 @@ func CreateEnigma(rotorType1, rotorType2, rotorType3, reflectorType int) Enigma 
 	return e
 }
 
+func CreateStandardEnigma() Enigma {
+	return CreateEnigma(RotorIII, RotorII, RotorI, ReflectorB)
+}
+
 // Set starting positions of the rotors (also known as Grundstellung).
 func (e *Enigma) SetOffsets(a... int) {
 	for i, v := range a {
