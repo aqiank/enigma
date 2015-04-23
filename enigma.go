@@ -87,8 +87,12 @@ func CreateRotor(type_ int) Rotor {
 
 // Set the initial offset (or position) of the rotor. Also known as
 // grundstellung.
-func (r *Rotor) SetStartingPosition(pos int) {
+func (r *Rotor) SetOffset(pos int) {
 	r.offset = pos
+}
+
+func (r *Rotor) Offset() int {
+	return r.offset
 }
 
 // Scrambles a character depending on its current rotor position.
@@ -193,15 +197,19 @@ func CreateEnigma(rotorType1, rotorType2, rotorType3, reflectorType int) Enigma 
 }
 
 // Set starting positions of the rotors (also known as Grundstellung).
-func (e *Enigma) SetStartingPositions(a... int) {
+func (e *Enigma) SetOffsets(a... int) {
 	for i, v := range a {
 		if v >= 65 && v <= 90 {
 			v -= 'A'
 		} else if v < 0 && v > 25 {
 			return
 		}
-		e.components[i + 1].(*Rotor).SetStartingPosition(v)
+		e.components[i + 1].(*Rotor).SetOffset(v)
 	}
+}
+
+func (e *Enigma) Offset(idx int) int {
+	return e.components[idx + 1].(*Rotor).Offset()
 }
 
 // Connect a set of Enigma components together
