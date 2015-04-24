@@ -3,7 +3,7 @@ package enigma
 import (
 	"strings"
 
-	"enigma/stringutil"
+	"github.com/jackyb/enigma/stringutil"
 )
 
 // These information were obtained from
