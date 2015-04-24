@@ -70,6 +70,10 @@ func (p *Plugboard) step(n int) int {
 	return n
 }
 
+func (p *Plugboard) Clone() Plugboard {
+	return Plugboard{p.charMap}
+}
+
 // Rotor always scrambles character differently every time a character enters.
 // When the rotor offset reaches its notch, its next step will cause the next
 // rotor to also step.
@@ -93,6 +97,12 @@ func (r *Rotor) SetOffset(pos int) {
 
 func (r *Rotor) Offset() int {
 	return r.offset
+}
+
+func (r *Rotor) Clone() Rotor {
+	nr := CreateRotor(r.type_)
+	nr.SetOffset(r.offset)
+	return nr
 }
 
 // Scrambles a character depending on its current rotor position.
@@ -166,6 +176,10 @@ func CreateReflector(type_ int) Reflector {
 		type_: type_,
 		charMap: reflectorCharMap[type_],
 	}
+}
+
+func (r *Reflector) Clone() Reflector {
+	return CreateReflector(r.type_)
 }
 
 // Mirrors a character with its partner
@@ -269,4 +283,15 @@ func (e *Enigma) Step(steps int) {
 			break
 		}
 	}
+}
+
+func (e *Enigma) Clone() Enigma {
+	ne := Enigma{}
+	pb := e.components[0].(*Plugboard).Clone()
+	r1 := e.components[1].(*Rotor).Clone()
+	r2 := e.components[2].(*Rotor).Clone()
+	r3 := e.components[3].(*Rotor).Clone()
+	rfl := e.components[4].(*Reflector).Clone()
+	ne.connect(&pb, &r1, &r2, &r3, &rfl)
+	return ne
 }
