@@ -82,8 +82,8 @@ type Rotor struct {
 	offset int
 }
 
-func CreateRotor(type_ int) Rotor {
-	return Rotor{
+func NewRotor(type_ int) *Rotor {
+	return &Rotor{
 		type_: type_,
 		offset: 0,
 	}
@@ -99,8 +99,8 @@ func (r *Rotor) Offset() int {
 	return r.offset
 }
 
-func (r *Rotor) Clone() Rotor {
-	nr := CreateRotor(r.type_)
+func (r *Rotor) Clone() *Rotor {
+	nr := NewRotor(r.type_)
 	nr.SetOffset(r.offset)
 	return nr
 }
@@ -171,15 +171,15 @@ type Reflector struct {
 	charMap string
 }
 
-func CreateReflector(type_ int) Reflector {
-	return Reflector{
+func NewReflector(type_ int) *Reflector {
+	return &Reflector{
 		type_: type_,
 		charMap: reflectorCharMap[type_],
 	}
 }
 
-func (r *Reflector) Clone() Reflector {
-	return CreateReflector(r.type_)
+func (r *Reflector) Clone() *Reflector {
+	return NewReflector(r.type_)
 }
 
 // Mirrors a character with its partner
@@ -199,19 +199,19 @@ type Enigma struct {
 
 // Convenient function to create Enigma in standard configurations
 // e.g. a plugboard, three rotors, and a reflector
-func CreateEnigma(rotorType1, rotorType2, rotorType3, reflectorType int) Enigma {
-	e := Enigma{}
+func NewEnigma(rotorType1, rotorType2, rotorType3, reflectorType int) *Enigma {
+	e := &Enigma{}
 	pb := Plugboard{Alphabets}
-	r1 := CreateRotor(rotorType1)
-	r2 := CreateRotor(rotorType2)
-	r3 := CreateRotor(rotorType3)
-	rfl := CreateReflector(reflectorType)
-	e.connect(&pb, &r1, &r2, &r3, &rfl)
+	r1 := NewRotor(rotorType1)
+	r2 := NewRotor(rotorType2)
+	r3 := NewRotor(rotorType3)
+	rfl := NewReflector(reflectorType)
+	e.connect(&pb, r1, r2, r3, rfl)
 	return e
 }
 
-func CreateStandardEnigma() Enigma {
-	return CreateEnigma(RotorIII, RotorII, RotorI, ReflectorB)
+func NewStandardEnigma() *Enigma {
+	return NewEnigma(RotorIII, RotorII, RotorI, ReflectorB)
 }
 
 // Set starting positions of the rotors (also known as Grundstellung).
@@ -285,13 +285,13 @@ func (e *Enigma) Step(steps int) {
 	}
 }
 
-func (e *Enigma) Clone() Enigma {
-	ne := Enigma{}
+func (e *Enigma) Clone() *Enigma {
+	ne := &Enigma{}
 	pb := e.components[0].(*Plugboard).Clone()
 	r1 := e.components[1].(*Rotor).Clone()
 	r2 := e.components[2].(*Rotor).Clone()
 	r3 := e.components[3].(*Rotor).Clone()
 	rfl := e.components[4].(*Reflector).Clone()
-	ne.connect(&pb, &r1, &r2, &r3, &rfl)
+	ne.connect(&pb, r1, r2, r3, rfl)
 	return ne
 }
